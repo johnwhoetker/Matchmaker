@@ -1,86 +1,456 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Class Project Proposal</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>MatchMate — Connect by interests</title>
+  <meta name="description" content="MatchMate: connect people with shared interests. Create profiles, list hobbies, and find matches." />
   <style>
-    body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f5f5f5; }
-    header { background: #2c3e50; padding: 20px; color: white; text-align: center; }
-    main { max-width: 900px; margin: auto; background: white; padding: 20px; }
-    h2 { border-bottom: 2px solid #ddd; padding-bottom: 6px; }
-    ul { margin-left: 20px; }
-    footer { text-align: center; padding: 15px; background: #eee; margin-top: 20px; }
-    nav { background: #34495e; padding: 10px; text-align: center; }
-    nav a { color: white; margin: 0 15px; text-decoration: none; font-weight: bold; }
-    nav a:hover { text-decoration: underline; }
+    :root{
+      --accent:#2563eb; --muted:#6b7280; --bg:#f7fafc; --card:#ffffff;
+      --maxw:1000px;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial;color:#0f172a;background:var(--bg);display:flex;justify-content:center;padding:24px}
+    .wrap{width:100%;max-width:var(--maxw)}
+    header{display:flex;align-items:center;gap:16px;margin-bottom:18px}
+    header h1{margin:0;font-size:22px}
+    header p{margin:0;color:var(--muted)}
+    .grid{display:grid;grid-template-columns:1fr 380px;gap:18px}
+    .card{background:var(--card);padding:16px;border-radius:10px;box-shadow:0 6px 20px rgba(15,23,42,0.06);border:1px solid rgba(2,6,23,0.03)}
+    label{display:block;margin:8px 0 4px;font-weight:600}
+    input[type="text"], input[type="number"], textarea, select {
+      width:100%;padding:10px;border-radius:8px;border:1px solid #e6eefc;margin-bottom:8px;font-size:14px
+    }
+    .hobby-list{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 12px}
+    .chip{padding:6px 10px;border-radius:999px;border:1px solid #e6eefc;background:transparent;cursor:pointer;font-size:13px}
+    .chip.selected{background:var(--accent);color:white;border-color:transparent}
+    .btn{padding:10px 12px;border-radius:8px;border:0;cursor:pointer;font-weight:700}
+    .btn.primary{background:var(--accent);color:white}
+    .btn.ghost{background:transparent;border:1px solid #e6eefc;color:var(--accent)}
+    .small{font-size:13px;color:var(--muted)}
+    .profiles{display:flex;flex-direction:column;gap:10px;max-height:420px;overflow:auto;padding-right:4px}
+    .profile{display:flex;justify-content:space-between;align-items:center;padding:10px;border-radius:8px;border:1px dashed #eef2ff}
+    .profile .left{display:flex;gap:12px;align-items:center}
+    .avatar{width:46px;height:46px;border-radius:8px;background:#eef4ff;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--accent)}
+    .meta{color:var(--muted);font-size:13px}
+    .actions{display:flex;gap:8px}
+    .match-score{font-weight:800;color:var(--accent)}
+    .matches-list{display:flex;flex-direction:column;gap:10px;margin-top:10px}
+    .controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px}
+    .search{display:flex;gap:8px;align-items:center}
+    footer{margin-top:14px;color:var(--muted);font-size:13px;text-align:center}
+    @media (max-width:900px){ .grid{grid-template-columns:1fr; } .wrap{padding:0 12px} }
   </style>
 </head>
 <body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>MatchMate</h1>
+        <p class="small">Create profiles, list hobbies, and find people with shared interests — no signup required.</p>
+      </div>
+      <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+        <button id="downloadBtn" class="btn ghost" title="Download HTML">Download</button>
+        <button id="clearAll" class="btn" title="Clear saved data">Clear Data</button>
+      </div>
+    </header>
 
-<header>
-  <h1>Class Project Proposal</h1>
-</header>
+    <div class="grid">
+      <!-- LEFT: main interactions -->
+      <main>
+        <section class="card" aria-labelledby="createTitle">
+          <h2 id="createTitle">Create / Edit Profile</h2>
 
-<nav>
-  <a href="#product">Product Name</a>
-  <a href="#team">Team Members</a>
-  <a href="#overview">Application Overview</a>
-  <a href="#technology">Technology</a>
-  <a href="#features">Features</a>
-</nav>
+          <form id="profileForm" onsubmit="return false" autocomplete="off">
+            <input type="hidden" id="profileId" />
 
-<main>
-  <section id="product">
-    <h2>Product Name</h2>
-    <p><strong>MatchMate</strong></p>
-  </section>
+            <label for="name">Name</label>
+            <input id="name" type="text" placeholder="Full name" required/>
 
-  <section id="team">
-    <h2>Team Members</h2>
-    <ul>
-      <li>Wyatt Hoetker</li>
-    </ul>
-  </section>
+            <label for="age">Age</label>
+            <input id="age" type="number" min="13" placeholder="Age (optional)"/>
 
-  <section id="overview">
-    <h2>Application Overview</h2>
-    <p>MatchMate is a simple web-based system designed to match people based on shared interests. Users can create a basic profile, enter their top interests, and the system provides potential matches. The goal is to make connecting with others easier and more fun.</p>
-  </section>
+            <label for="bio">Short bio</label>
+            <textarea id="bio" rows="3" placeholder="A line about you (optional)"></textarea>
 
-  <section id="technology">
-    <h2>Technology Overview</h2>
-    <ul>
-      <li>HTML / CSS for the layout</li>
-      <li>JavaScript for simple interactions</li>
-      <li>Hosted using GitHub Pages</li>
-    </ul>
-  </section>
+            <label>Pick hobbies (click to toggle)</label>
+            <div id="hobbyChips" class="hobby-list" role="listbox" aria-label="Hobbies">
+              <!-- chips inserted by JS -->
+            </div>
 
-  <section id="features">
-    <h2>Feature List (Prioritized)</h2>
-    <ul>
-      <li>Create a profile</li>
-      <li>Enter interests</li>
-      <li>Basic matching system</li>
-    </ul>
+            <label for="customHobby">Add custom hobby</label>
+            <div style="display:flex;gap:8px">
+              <input id="customHobby" type="text" placeholder="e.g. pottery"/>
+              <button id="addHobbyBtn" class="btn ghost">Add</button>
+            </div>
 
-    <h3>Future Features</h3>
-    <ul>
-      <li>Chat system</li>
-      <li>AI-powered matching</li>
-    </ul>
-  </section>
+            <div style="display:flex;gap:8px;margin-top:12px">
+              <button id="saveProfile" class="btn primary">Save Profile</button>
+              <button id="resetForm" class="btn">Reset</button>
+            </div>
+            <p id="formMsg" class="small" style="margin-top:8px"></p>
+          </form>
+        </section>
 
-  <section>
-    <h2>Proposal Last Updated</h2>
-    <p>December 4, 2025</p>
-  </section>
-</main>
+        <section class="card" style="margin-top:14px" aria-labelledby="matchesTitle">
+          <h2 id="matchesTitle">Find Matches</h2>
 
-<footer>
-  <p>© 2025 MatchMate Proposal</p>
-</footer>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <label style="margin:0;font-weight:600">Match for:</label>
+            <select id="selectProfile"></select>
+            <button id="computeMatches" class="btn primary">Compute Matches</button>
+            <button id="showAll" class="btn">Show All</button>
+          </div>
 
+          <div id="matches" class="matches-list" aria-live="polite"></div>
+        </section>
+      </main>
+
+      <!-- RIGHT: sidebar -->
+      <aside>
+        <section class="card" aria-labelledby="profilesTitle">
+          <h3 id="profilesTitle">All Profiles</h3>
+
+          <div class="controls">
+            <div class="search">
+              <input id="searchInput" type="text" placeholder="Search by name or hobby" />
+              <select id="sortSelect">
+                <option value="newest">Newest</option>
+                <option value="alpha">A → Z</option>
+                <option value="matches">Most hobbies</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="profiles" class="profiles" role="list"></div>
+        </section>
+
+        <section class="card" style="margin-top:12px">
+          <h3>About</h3>
+          <p class="small">MatchMate is a lightweight, privacy-friendly demo. Profiles are stored locally in your browser's storage and never sent anywhere.</p>
+          <p class="small">To host: drop this file in a repo named <code>johnwhoetker.github.io</code> or any gh-pages branch and it will work.</p>
+        </section>
+      </aside>
+    </div>
+
+    <footer>
+      <p>© MatchMate — Demo. Profiles saved locally in your browser.</p>
+    </footer>
+  </div>
+
+  <script>
+    // --- Initial data & utilities ---
+    const DEFAULT_HOBBIES = ["Reading","Gaming","Music","Sports","Hiking","Cooking","Art","Tech","Travel","Movies"];
+    const LS_KEY = 'matchmate_profiles_v1';
+
+    function uid(prefix='id'){ return prefix + '_' + Math.random().toString(36).slice(2,9); }
+
+    function loadProfiles(){
+      try {
+        const raw = localStorage.getItem(LS_KEY);
+        return raw ? JSON.parse(raw) : [];
+      } catch(e){ console.error(e); return []; }
+    }
+    function saveProfiles(list){
+      localStorage.setItem(LS_KEY, JSON.stringify(list));
+    }
+
+    // --- State ---
+    let profiles = loadProfiles();
+    let hobbySet = new Set(DEFAULT_HOBBIES.map(h=>h.toLowerCase()));
+
+    // --- DOM refs ---
+    const hobbyChips = document.getElementById('hobbyChips');
+    const addHobbyBtn = document.getElementById('addHobbyBtn');
+    const customHobby = document.getElementById('customHobby');
+    const profileForm = document.getElementById('profileForm');
+    const profileId = document.getElementById('profileId');
+    const nameInput = document.getElementById('name');
+    const ageInput = document.getElementById('age');
+    const bioInput = document.getElementById('bio');
+    const formMsg = document.getElementById('formMsg');
+    const saveProfileBtn = document.getElementById('saveProfile');
+    const resetFormBtn = document.getElementById('resetForm');
+    const profilesEl = document.getElementById('profiles');
+    const selectProfile = document.getElementById('selectProfile');
+    const computeMatchesBtn = document.getElementById('computeMatches');
+    const matchesEl = document.getElementById('matches');
+    const searchInput = document.getElementById('searchInput');
+    const sortSelect = document.getElementById('sortSelect');
+    const showAllBtn = document.getElementById('showAll');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const clearAllBtn = document.getElementById('clearAll');
+
+    // --- Hobby chips UI ---
+    function renderHobbyChips(selected=[]) {
+      hobbyChips.innerHTML = '';
+      const hobbies = Array.from(new Set([...DEFAULT_HOBBIES, ...Array.from(hobbySet).filter(h=>!DEFAULT_HOBBIES.map(d=>d.toLowerCase()).includes(h)).map(h=>capitalize(h))]));
+      hobbies.forEach(h=>{
+        const btn = document.createElement('button');
+        btn.type='button';
+        btn.className='chip' + (selected.includes(h.toLowerCase()) ? ' selected' : '');
+        btn.textContent = h;
+        btn.setAttribute('data-hobby', h.toLowerCase());
+        btn.addEventListener('click', ()=> {
+          btn.classList.toggle('selected');
+        });
+        hobbyChips.appendChild(btn);
+      });
+    }
+
+    function getSelectedHobbiesFromChips(){
+      return Array.from(hobbyChips.querySelectorAll('.chip.selected')).map(b=>b.dataset.hobby);
+    }
+
+    addHobbyBtn.addEventListener('click', (e)=>{
+      e.preventDefault();
+      const val = customHobby.value.trim();
+      if(!val) return;
+      hobbySet.add(val.toLowerCase());
+      renderHobbyChips(getSelectedHobbiesFromChips());
+      customHobby.value='';
+    });
+
+    // --- Profile CRUD ---
+    function createProfileObj({id=null,name,age,bio,hobbies}){
+      return {
+        id: id || uid('p'),
+        name: name || 'Anonymous',
+        age: age ? Number(age) : null,
+        bio: bio || '',
+        hobbies: Array.from(new Set(hobbies.map(h=>h.toLowerCase()))),
+        createdAt: Date.now()
+      };
+    }
+
+    function saveOrUpdateProfile(){
+      const id = profileId.value || null;
+      const name = nameInput.value.trim();
+      if(!name){ showFormMsg('Please enter a name', true); return; }
+      const age = ageInput.value.trim();
+      const bio = bioInput.value.trim();
+      const hobbies = getSelectedHobbiesFromChips();
+      if(hobbies.length === 0){
+        showFormMsg('Pick at least one hobby', true); return;
+      }
+      if(id){
+        // update
+        const idx = profiles.findIndex(p=>p.id===id);
+        if(idx>-1){
+          profiles[idx] = {...profiles[idx], name, age: age||null, bio, hobbies};
+          saveProfiles(profiles);
+          showFormMsg('Profile updated', false);
+        }
+      } else {
+        const p = createProfileObj({name,age,bio,hobbies});
+        profiles.unshift(p);
+        saveProfiles(profiles);
+        showFormMsg('Profile saved', false);
+      }
+      renderAll();
+      resetForm();
+    }
+
+    function showFormMsg(txt,isError){
+      formMsg.textContent = txt;
+      formMsg.style.color = isError ? '#b91c1c' : 'var(--muted)';
+      setTimeout(()=>{ formMsg.textContent=''; }, 3000);
+    }
+
+    function resetForm(){
+      profileId.value='';
+      profileForm.reset();
+      renderHobbyChips([]);
+    }
+
+    // --- Render functions ---
+    function capitalize(s){ if(!s) return s; return s[0].toUpperCase()+s.slice(1); }
+
+    function renderProfilesList(filterText='', sortBy='newest'){
+      profilesEl.innerHTML='';
+      let list = profiles.slice();
+
+      // filter
+      if(filterText){
+        const q = filterText.toLowerCase();
+        list = list.filter(p => p.name.toLowerCase().includes(q) || p.hobbies.some(h=>h.includes(q)));
+      }
+
+      // sort
+      if(sortBy==='alpha') list.sort((a,b)=>a.name.localeCompare(b.name));
+      else if(sortBy==='matches') list.sort((a,b)=>b.hobbies.length - a.hobbies.length);
+      else list.sort((a,b)=>b.createdAt - a.createdAt);
+
+      list.forEach(p=>{
+        const item = document.createElement('div');
+        item.className = 'profile';
+        item.innerHTML = `
+          <div class="left">
+            <div class="avatar">${(p.name||'?').slice(0,1).toUpperCase()}</div>
+            <div>
+              <div style="font-weight:700">${escapeHtml(p.name)} <span class="meta"> ${p.age ? '· ' + p.age : ''}</span></div>
+              <div class="meta">${escapeHtml(p.bio || '')}</div>
+              <div class="small meta">Hobbies: ${p.hobbies.map(h=>escapeHtml(capitalize(h))).join(', ')}</div>
+            </div>
+          </div>
+          <div class="actions">
+            <button class="btn" data-action="edit" data-id="${p.id}">Edit</button>
+            <button class="btn" data-action="delete" data-id="${p.id}">Delete</button>
+          </div>
+        `;
+        // event delegation for buttons
+        item.querySelectorAll('button').forEach(b=>{
+          b.addEventListener('click', (ev)=>{
+            const id = b.dataset.id;
+            if(b.dataset.action==='edit') loadProfileIntoForm(id);
+            if(b.dataset.action==='delete') {
+              if(confirm('Delete this profile?')) {
+                profiles = profiles.filter(x=>x.id!==id);
+                saveProfiles(profiles);
+                renderAll();
+              }
+            }
+          });
+        });
+        profilesEl.appendChild(item);
+      });
+
+      // also populate selectProfile
+      renderSelectProfile();
+    }
+
+    function renderSelectProfile(){
+      selectProfile.innerHTML = '';
+      const placeholder = document.createElement('option');
+      placeholder.value = '';
+      placeholder.textContent = '-- choose profile --';
+      selectProfile.appendChild(placeholder);
+      profiles.forEach(p=>{
+        const o = document.createElement('option');
+        o.value = p.id;
+        o.textContent = `${p.name} (${p.hobbies.length} hobbies)`;
+        selectProfile.appendChild(o);
+      });
+    }
+
+    // --- Matching logic ---
+    function computeMatchesFor(profileId){
+      matchesEl.innerHTML='';
+      const p = profiles.find(x=>x.id===profileId);
+      if(!p){ matchesEl.innerHTML = '<div class="small">Select a profile with at least one hobby to compute matches.</div>'; return; }
+
+      const others = profiles.filter(x=>x.id !== profileId);
+      const scored = others.map(o=>{
+        const shared = o.hobbies.filter(h=>p.hobbies.includes(h));
+        return {...o, sharedCount: shared.length, shared};
+      }).filter(x=>x.sharedCount>0);
+
+      if(scored.length===0){ matchesEl.innerHTML = '<div class="small">No matches found (no overlapping hobbies).</div>'; return; }
+
+      scored.sort((a,b)=>b.sharedCount - a.sharedCount || b.hobbies.length - a.hobbies.length);
+
+      scored.forEach(s=>{
+        const el = document.createElement('div');
+        el.className = 'profile';
+        el.innerHTML = `
+          <div class="left">
+            <div class="avatar">${(s.name||'?').slice(0,1).toUpperCase()}</div>
+            <div>
+              <div style="font-weight:700">${escapeHtml(s.name)} <span class="meta">(${s.sharedCount} shared)</span></div>
+              <div class="small meta">Shared: ${s.shared.map(h=>escapeHtml(capitalize(h))).join(', ')}</div>
+              <div class="meta">${escapeHtml(s.bio||'')}</div>
+            </div>
+          </div>
+          <div style="text-align:right"><div class="match-score">${s.sharedCount}</div></div>
+        `;
+        matchesEl.appendChild(el);
+      });
+    }
+
+    // --- Edit/load profile into form ---
+    function loadProfileIntoForm(id){
+      const p = profiles.find(x=>x.id===id);
+      if(!p) return;
+      profileId.value = p.id;
+      nameInput.value = p.name;
+      ageInput.value = p.age || '';
+      bioInput.value = p.bio || '';
+      renderHobbyChips(p.hobbies);
+      window.scrollTo({top:0,behavior:'smooth'});
+    }
+
+    // --- Helpers ---
+    function escapeHtml(s){
+      if(!s) return '';
+      return s.replace(/[&<>"']/g, function(m){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]; });
+    }
+
+    // --- Main render ---
+    function renderAll(){
+      renderHobbyChips([]);
+      renderProfilesList(searchInput.value.trim(), sortSelect.value);
+      renderSelectProfile();
+      matchesEl.innerHTML='';
+    }
+
+    // --- Events binding ---
+    saveProfileBtn.addEventListener('click', saveOrUpdateProfile);
+    resetFormBtn.addEventListener('click', (e)=>{ e.preventDefault(); resetForm(); });
+
+    computeMatchesBtn.addEventListener('click', ()=>{
+      const id = selectProfile.value;
+      if(!id){ alert('Choose a profile to compute matches for.'); return; }
+      computeMatchesFor(id);
+    });
+
+    showAllBtn.addEventListener('click', ()=>{ selectProfile.value=''; renderAll(); matchesEl.innerHTML=''; });
+
+    searchInput.addEventListener('input', ()=> renderProfilesList(searchInput.value.trim(), sortSelect.value));
+    sortSelect.addEventListener('change', ()=> renderProfilesList(searchInput.value.trim(), sortSelect.value));
+
+    downloadBtn.addEventListener('click', ()=>{
+      const html = '<!doctype html>' + document.documentElement.outerHTML;
+      const blob = new Blob([html], {type: 'text/html'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'index.html'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+    });
+
+    clearAllBtn.addEventListener('click', ()=>{
+      if(confirm('Clear all stored profiles? This cannot be undone.')) {
+        profiles = [];
+        saveProfiles(profiles);
+        renderAll();
+      }
+    });
+
+    // make Enter add hobby when typing in custom hobby input
+    customHobby.addEventListener('keydown', (e)=> {
+      if(e.key === 'Enter'){ e.preventDefault(); addHobbyBtn.click(); }
+    });
+
+    // --- Pre-populate sample profiles if none exist (optional) ---
+    if(profiles.length === 0){
+      profiles = [
+        createProfileObj({name:'Alex Carter',age:24,bio:'Coffee & code',hobbies:['tech','gaming','music']}),
+        createProfileObj({name:'Jamie Rivera',age:29,bio:'Runner and reader',hobbies:['running','reading','music']}),
+        createProfileObj({name:'Sam Lee',age:21,bio:'Amateur chef',hobbies:['cooking','travel','art']}),
+      ];
+      saveProfiles(profiles);
+      // ensure hobbySet includes these
+      profiles.forEach(p => p.hobbies.forEach(h => hobbySet.add(h.toLowerCase())));
+    }
+
+    // --- Utility: transform default hobby cases & render initial UI ---
+    function normalizeDefaultHobbies(){
+      DEFAULT_HOBBIES.forEach(h => hobbySet.add(h.toLowerCase()));
+    }
+    normalizeDefaultHobbies();
+    renderAll();
+
+    // --- Small safety: prevent XSS injection when pasting HTML into inputs ---
+    // (we already escape before injecting into DOM in render functions)
+  </script>
 </body>
 </html>
